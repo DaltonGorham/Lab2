@@ -16,7 +16,7 @@ public class EventPanel extends JPanel {
 
         setLayout(new BorderLayout(5, 5));
         setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, Color.BLACK));
-        JPanel eventDetailsPanel = new JPanel();
+        eventDetailsPanel = new JPanel();
         eventDetailsPanel.setLayout(new BoxLayout(eventDetailsPanel, BoxLayout.Y_AXIS));
         eventDetailsPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         add(eventDetailsPanel, BorderLayout.CENTER);

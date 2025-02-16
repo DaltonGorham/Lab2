@@ -5,7 +5,9 @@ import java.time.LocalDateTime;
 
 public class EventPlanner {
 
+    public static void addDefaultEvents(EventListPanel events) {
 
+    }
 
 
 
@@ -13,7 +15,7 @@ public class EventPlanner {
         JFrame frame = new JFrame("EventPlanner");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        EventListPanel listPanel = new EventListPanel();
+        EventListPanel listPanel = new EventListPanel(frame);
 
 
         frame.add(listPanel);
