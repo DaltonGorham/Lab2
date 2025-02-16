@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -21,7 +22,10 @@ public class EventListPanel extends JPanel {
     private JCheckBox hideEventsCheckbox;
     private JCheckBox hideDeadlinesCheckbox;
     private JCheckBox hideMeetingsCheckbox;
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("hh:mm a");
+
+
 
 
     public EventListPanel(JFrame parentFrame) {
@@ -145,21 +149,21 @@ public class EventListPanel extends JPanel {
                 }
 
                 String eventName = modal.getEventName();
-                String eventStartTime = modal.getEventStartTime();
-                String eventEndTime = modal.getEventEndTime();
+                LocalDateTime eventStartTime = parseDateTime(modal.getEventStartTime());
+                LocalDateTime eventEndTime = parseDateTime(modal.getEventEndTime());
                 String eventLocation = modal.getEventLocation();
                 String eventDate = modal.getEventDate();
 
+                switch (eventType) {
+                    case "Meeting":
+                        events.add(new Meeting(eventName, eventStartTime, eventEndTime, eventLocation));
+                        break;
+                    case "Deadline":
+                        events.add(new Deadline(eventName, parseDateTime(eventDate)));
+                }
 
-                System.out.println("Event Type: " + eventType);
-                System.out.println("Event Name: " + eventName);
-                System.out.println("Event Start Time: " + eventStartTime);
-                System.out.println("Event End Time: " + eventEndTime);
-                System.out.println("Event Location: " + eventLocation);
-                System.out.println("Event Date: " + eventDate);
-
-                events.add(new Deadline(eventName, parseDateTime(eventDate)));
                 updateDisplay();
+
                 System.out.println(events);
 
             }});
@@ -167,18 +171,13 @@ public class EventListPanel extends JPanel {
 
     }
 
-    public LocalDateTime parseDateTime(String dateTime) {
+    private LocalDateTime parseDateTime(String dateTime) {
         try {
-            // Define a formatter for date with optional time
-            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
-            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm am/pm");
-
             if (dateTime.contains(":")) {
-                // If a time is included, parse as LocalDateTime
-                return LocalDateTime.parse(dateTime, dateTimeFormatter);
+                LocalTime time = LocalTime.parse(dateTime, TIME_FORMATTER);
+                return LocalDateTime.of(LocalDate.now(), time);
             } else {
-                // If no time is given, default to midnight
-                return LocalDate.parse(dateTime, dateFormatter).atStartOfDay();
+                return LocalDate.parse(dateTime, DATE_FORMATTER).atStartOfDay();
             }
         } catch (DateTimeParseException e) {
             throw new IllegalArgumentException("Invalid date/time format: " + dateTime);
