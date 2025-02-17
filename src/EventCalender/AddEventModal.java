@@ -24,9 +24,8 @@ public class AddEventModal extends JDialog {
         super(parent, "Add Event", true);
         addComponentsToPane();
         setSize(600,400);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLocationRelativeTo(parent);
-        setVisible(true);
-
     }
 
     private void addComponentsToPane() {
@@ -73,24 +72,23 @@ public class AddEventModal extends JDialog {
             eventStartTimeField.setEnabled(isMeeting);
             eventLocationField.setEnabled(isMeeting);
             eventEndTimeField.setEnabled(isMeeting);
+            boolean isDeadline = "Deadline".equals(eventDropDown.getSelectedItem());
+            eventDateField.setEnabled(isDeadline);
+            eventEndTimeField.setEnabled(isDeadline);
         });
 
 
 
-        confirmEventButton.addActionListener(e -> {
-            if (eventNameField.getText().isEmpty() || eventDateField.getText().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Event name and date are required! Try Again.",
-                        "Input Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
 
+
+        confirmEventButton.addActionListener(e -> {
             if (isEntryValid()) {
                 eventType = (String) eventDropDown.getSelectedItem();
                 eventName = eventNameField.getText();
                 eventDate = eventDateField.getText();
+                eventEndTime = eventEndTimeField.getText();
                 if ("Meeting".equals(eventType)){
                     eventStartTime = eventStartTimeField.getText();
-                    eventEndTime = eventEndTimeField.getText();
                     eventLocation = eventLocationField.getText();
                 }
                 isConfirmed = true;
@@ -108,13 +106,58 @@ public class AddEventModal extends JDialog {
 
 
     }
-    private boolean isEntryValid(){
-        if ("Meeting".equals(eventDropDown.getSelectedItem()) && eventEndTimeField.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Event Time is required for a Meeting!",
+    private boolean isEntryValid() {
+        // Check if event name is empty
+        if (eventNameField.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Event Name is required!",
                     "Input Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
+
+        // Validate the event date format (MM/DD/YYYY)
+        if (eventDateField.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Event Date is required!",
+                    "Input Error", JOptionPane.ERROR_MESSAGE);
+            return false;
+        } else if (!eventDateField.getText().matches("\\d{2}/\\d{2}/\\d{4}")) {
+            JOptionPane.showMessageDialog(this, "Event Date must be in MM/DD/YYYY format!",
+                    "Input Error", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
+        // Validate meeting-specific fields
+        if ("Meeting".equals(eventType)) {
+            if (eventStartTimeField.getText().isEmpty()){
+                JOptionPane.showMessageDialog(this, "Event Start Time is required!",
+                        "Input Error", JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
+
+            if (eventEndTimeField.getText().isEmpty()){
+                JOptionPane.showMessageDialog(this, "Event End Time is required!",
+                        "Input Error", JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
+
+            if (eventLocationField.getText().isEmpty()){
+                JOptionPane.showMessageDialog(this, "Event Location is required!",
+                        "Input Error", JOptionPane.ERROR_MESSAGE);
+            }
+
+            // Validate time format (HH:MM AM/PM)
+            if (!isValidTimeFormat(eventStartTimeField.getText()) || !isValidTimeFormat(eventEndTimeField.getText())) {
+                JOptionPane.showMessageDialog(this, "Event Start Time and End Time must be in HH:MM AM/PM format!",
+                        "Input Error", JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
+        }
+
         return true;
+    }
+
+    // This is to validate the format. @StackOverFlow
+    private boolean isValidTimeFormat(String time) {
+        return time.matches("^(1[0-2]|0?[1-9]):([0-5][0-9])\\s?[APap][Mm]$");
     }
 
     public boolean isConfirmed() {

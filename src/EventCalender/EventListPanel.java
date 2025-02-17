@@ -26,9 +26,8 @@ public class EventListPanel extends JPanel {
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("hh:mm a");
 
 
-
-
     public EventListPanel(JFrame parentFrame) {
+        setSize(800, 600);
         this.parentFrame = parentFrame;
         String[] sortingOptions = {"Sort by Name", "Sort by Date", "Sort by Name(Reverse Order)", "Sort by Date(Reverse Order)"};
         events = new ArrayList<Event>();
@@ -59,7 +58,7 @@ public class EventListPanel extends JPanel {
 
         add(displayPanel);
         displayPanel.setLayout(new BoxLayout(displayPanel, BoxLayout.Y_AXIS));
-        events.add(new Deadline("Meeting with Client", LocalDate.now().atStartOfDay()));
+
 
         handleSorting();
         handleFiltering();
@@ -70,11 +69,10 @@ public class EventListPanel extends JPanel {
 
 
     private void setFilterCheckboxVisibility(boolean visible) {
-       hideEventsCheckbox.setVisible(visible);
-       hideDeadlinesCheckbox.setVisible(visible);
-       hideMeetingsCheckbox.setVisible(visible);
+        hideEventsCheckbox.setVisible(visible);
+        hideDeadlinesCheckbox.setVisible(visible);
+        hideMeetingsCheckbox.setVisible(visible);
     }
-
 
 
     public void updateDisplay() {
@@ -107,22 +105,15 @@ public class EventListPanel extends JPanel {
             String selectedOption = (String) sortDropDown.getSelectedItem();
             if (selectedOption.equals("Sort by Name")) {
                 Collections.sort(events);
-            }
-            else if (selectedOption.equals("Sort by Date")){
+            } else if (selectedOption.equals("Sort by Date")) {
                 events.sort(Comparator.comparing(Event::getDateTime));
-            }
-            else if (selectedOption.equals("Sort by Name(Reverse Order)")) {
+            } else if (selectedOption.equals("Sort by Name(Reverse Order)")) {
                 Collections.sort(events, Collections.reverseOrder());
-            }
-            else if (selectedOption.equals("Sort by Date(Reverse Order)")) {
+            } else if (selectedOption.equals("Sort by Date(Reverse Order)")) {
                 events.sort(Comparator.comparing(Event::getDateTime).reversed());
             }
-
-
             updateDisplay();
         });
-
-        updateDisplay();
     }
 
 
@@ -149,42 +140,38 @@ public class EventListPanel extends JPanel {
                 }
 
                 String eventName = modal.getEventName();
-                LocalDateTime eventStartTime = parseDateTime(modal.getEventStartTime());
-                LocalDateTime eventEndTime = parseDateTime(modal.getEventEndTime());
                 String eventLocation = modal.getEventLocation();
                 String eventDate = modal.getEventDate();
 
                 switch (eventType) {
                     case "Meeting":
+                        LocalDateTime eventStartTime = parseDateTime(modal.getEventDate(), modal.getEventStartTime());
+                        LocalDateTime eventEndTime = parseDateTime(modal.getEventDate(), modal.getEventEndTime());
                         events.add(new Meeting(eventName, eventStartTime, eventEndTime, eventLocation));
                         break;
                     case "Deadline":
-                        events.add(new Deadline(eventName, parseDateTime(eventDate)));
+                        String eventTime = modal.getEventEndTime();
+                        System.out.println(eventTime);
+                        events.add(new Deadline(eventName, parseDateTime(eventDate, eventTime)));
                 }
 
                 updateDisplay();
 
                 System.out.println(events);
 
-            }});
-        updateDisplay();
-
+            }
+        });
     }
 
-    private LocalDateTime parseDateTime(String dateTime) {
+    private LocalDateTime parseDateTime(String date, String time) {
         try {
-            if (dateTime.contains(":")) {
-                LocalTime time = LocalTime.parse(dateTime, TIME_FORMATTER);
-                return LocalDateTime.of(LocalDate.now(), time);
-            } else {
-                return LocalDate.parse(dateTime, DATE_FORMATTER).atStartOfDay();
-            }
+            LocalDate parsedDate = LocalDate.parse(date, DATE_FORMATTER);
+            LocalTime parsedTime = (time != null && !time.isEmpty()) ? LocalTime.parse(time, TIME_FORMATTER) : LocalTime.MIDNIGHT;
+            System.out.println(parsedDate);
+            System.out.println(parsedTime);
+            return LocalDateTime.of(parsedDate, parsedTime);
         } catch (DateTimeParseException e) {
-            throw new IllegalArgumentException("Invalid date/time format: " + dateTime);
+            throw new IllegalArgumentException("Invalid date/time format: " + date + (time != null ? " " + time : ""));
         }
     }
-
-
-
-
-    }
+}

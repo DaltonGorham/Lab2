@@ -8,7 +8,7 @@ public class EventPanel extends JPanel {
     private Event event;
     private JPanel eventDetailsPanel;
     private JButton completeButton;
-    private JLabel nameLabel, timeLabel, durationLabel, locationLabel, completedLabel, dateLabel;
+    private JLabel nameLabel, startTimeLabel, endTimeLabel, durationLabel, locationLabel, completedLabel, dateLabel;
     DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("MMM d, yyyy");
     DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("h:mm a");
 
@@ -27,8 +27,6 @@ public class EventPanel extends JPanel {
         nameLabel = new JLabel("Event: " + event.getName());
         nameLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0));
         eventDetailsPanel.add(nameLabel);
-        timeLabel = new JLabel("Time: " + event.getDateTime().format(timeFormat));
-        eventDetailsPanel.add(timeLabel);
 
 
         eventDetailsPanel.add(Box.createVerticalGlue());
@@ -39,6 +37,12 @@ public class EventPanel extends JPanel {
         if (event instanceof Meeting meeting) {
             dateLabel = new JLabel("Date: " + meeting.getDateTime().format(dateFormat));
             eventDetailsPanel.add(dateLabel);
+
+            startTimeLabel = new JLabel("Start Time: " + meeting.getStartDateTime().format(timeFormat));
+            eventDetailsPanel.add(startTimeLabel);
+
+            endTimeLabel = new JLabel("End Time: " + meeting.getEndDateTime().format(timeFormat));
+            eventDetailsPanel.add(endTimeLabel);
 
             durationLabel = new JLabel("Duration: " + meeting.getDuration());
             eventDetailsPanel.add(durationLabel);
@@ -52,7 +56,8 @@ public class EventPanel extends JPanel {
             dateLabel = new JLabel("Date: " + deadline.getDateTime().format(dateFormat));
             eventDetailsPanel.add(dateLabel);
 
-
+            endTimeLabel = new JLabel("Due: " + deadline.getDateTime().format(timeFormat));
+            eventDetailsPanel.add(endTimeLabel);
         }
 
         if (event instanceof Completable) {
