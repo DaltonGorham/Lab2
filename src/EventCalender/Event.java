@@ -25,9 +25,9 @@ abstract class Event implements Comparable<Event> {
         this.name = name;
     }
 
+    @Override
     public int compareTo(Event e) {
-        return this.name.compareTo(e.getName());
+        return this.name.compareTo(e.name);
     }
-
 
 }

@@ -19,13 +19,14 @@ public class EventListPanel extends JPanel {
     private JCheckBox filterDisplay;
     private JButton addEventButton;
     private JFrame parentFrame;
-    private JCheckBox hideEventsCheckbox;
-    private JCheckBox hideDeadlinesCheckbox;
-    private JCheckBox hideMeetingsCheckbox;
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MM/dd/yyyy");
-    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("hh:mm a");
+    private JCheckBox removeEventsCheckbox;
+    private JCheckBox removeDeadlinesCheckbox;
+    private JCheckBox removeMeetingsCheckbox;
+    private JCheckBox removeCompletedCheckbox;
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MM/dd/yyyy");  // format for dates
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("hh:mm a");     // formats for times
 
-
+    // constructor
     public EventListPanel(JFrame parentFrame) {
         setSize(800, 600);
         this.parentFrame = parentFrame;
@@ -34,32 +35,34 @@ public class EventListPanel extends JPanel {
         controlPanel = new JPanel();
         displayPanel = new JPanel();
         sortDropDown = new JComboBox<>(sortingOptions);
-        filterDisplay = new JCheckBox("Filter Display");
+        filterDisplay = new JCheckBox("Show Filters");
         addEventButton = new JButton("Add Event");
 
         // Multiple filter checkboxes
-        hideEventsCheckbox = new JCheckBox("Hide Events");
-        hideDeadlinesCheckbox = new JCheckBox("Hide Deadlines");
-        hideMeetingsCheckbox = new JCheckBox("Hide Meetings");
+        removeEventsCheckbox = new JCheckBox("Remove Events");
+        removeDeadlinesCheckbox = new JCheckBox("Remove Deadlines");
+        removeMeetingsCheckbox = new JCheckBox("Remove Meetings");
+        removeCompletedCheckbox = new JCheckBox("Remove Completed Tasks");
 
-
+        // add all controls to control panel
         controlPanel.add(addEventButton);
         controlPanel.add(sortDropDown);
         controlPanel.add(filterDisplay);
-        controlPanel.add(hideEventsCheckbox);
-        controlPanel.add(hideDeadlinesCheckbox);
-        controlPanel.add(hideMeetingsCheckbox);
+        controlPanel.add(removeEventsCheckbox);
+        controlPanel.add(removeDeadlinesCheckbox);
+        controlPanel.add(removeMeetingsCheckbox);
+        controlPanel.add(removeCompletedCheckbox);
         setFilterCheckboxVisibility(false);
         add(controlPanel);
 
+        // create the display panel
         displayPanel = new JPanel();
         displayPanel.setLayout(new BoxLayout(displayPanel, BoxLayout.Y_AXIS));
         displayPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-
         add(displayPanel);
         displayPanel.setLayout(new BoxLayout(displayPanel, BoxLayout.Y_AXIS));
 
-
+        // action listener methods
         handleSorting();
         handleFiltering();
         handleAddEvent();
@@ -68,31 +71,37 @@ public class EventListPanel extends JPanel {
     }
 
 
+    // If this is set as true the filter method will show up
     private void setFilterCheckboxVisibility(boolean visible) {
-        hideEventsCheckbox.setVisible(visible);
-        hideDeadlinesCheckbox.setVisible(visible);
-        hideMeetingsCheckbox.setVisible(visible);
+        removeEventsCheckbox.setVisible(visible);
+        removeDeadlinesCheckbox.setVisible(visible);
+        removeMeetingsCheckbox.setVisible(visible);
+        removeCompletedCheckbox.setVisible(visible);
     }
 
-
+    // Updates the display for every new event added and shows new filters when applicable
     public void updateDisplay() {
+        if (removeCompletedCheckbox.isSelected()) {
+            removeCompletedEvents();
+        }
+
+        // Apply filters based on individual checkboxes
+        if (removeEventsCheckbox.isSelected()) {
+            removeEvents();
+        }
+
+        if (removeDeadlinesCheckbox.isSelected()) {
+            removeDeadlines();
+        }
+
+        if (removeMeetingsCheckbox.isSelected()) {
+            removeMeetings();
+        }
+
         displayPanel.removeAll(); // Clear current display
 
         for (Event event : events) {
-            boolean displaying = true;
-
-            // Apply filters based on individual checkboxes
-            if (event instanceof Completable && hideEventsCheckbox.isSelected()) {
-                displaying = false; // Hide events (completable items)
-            } else if (event instanceof Deadline && hideDeadlinesCheckbox.isSelected()) {
-                displaying = false; // Hide deadlines
-            } else if (event instanceof Meeting && hideMeetingsCheckbox.isSelected()) {
-                displaying = false; // Hide meetings
-            }
-
-            if (displaying) {
-                displayPanel.add(new EventPanel(event));
-            }
+            displayPanel.add(new EventPanel(event));
         }
 
         // Refresh display
@@ -100,34 +109,57 @@ public class EventListPanel extends JPanel {
         displayPanel.repaint();
     }
 
+    // remove all deadlines
+    public void removeDeadlines() {
+        events.removeIf(event -> event instanceof Deadline);
+    }
+
+    // remove all meetings
+    public void removeMeetings() {
+        events.removeIf(event -> event instanceof Meeting);
+    }
+
+    // remove all events
+    public void removeEvents() {
+        events.clear();
+    }
+
+    // Remove completed events from the list
+    public void removeCompletedEvents() {
+        events.removeIf(event -> event instanceof Completable && ((Completable) event).isCompleted());
+    }
+
+
+
+    // Method to sort by name, date, or those in reverse
     public void handleSorting() {
         sortDropDown.addActionListener(e -> {
             String selectedOption = (String) sortDropDown.getSelectedItem();
-            if (selectedOption.equals("Sort by Name")) {
-                Collections.sort(events);
-            } else if (selectedOption.equals("Sort by Date")) {
-                events.sort(Comparator.comparing(Event::getDateTime));
-            } else if (selectedOption.equals("Sort by Name(Reverse Order)")) {
-                Collections.sort(events, Collections.reverseOrder());
-            } else if (selectedOption.equals("Sort by Date(Reverse Order)")) {
-                events.sort(Comparator.comparing(Event::getDateTime).reversed());
+
+            switch (selectedOption) {
+                case "Sort by Name" -> events.sort(Comparator.comparing(Event::getName));
+                case "Sort by Date" -> events.sort(Comparator.comparing(Event::getDateTime));
+                case "Sort by Name(Reverse Order)" -> events.sort(Comparator.comparing(Event::getName).reversed());
+                case "Sort by Date(Reverse Order)" -> events.sort(Comparator.comparing(Event::getDateTime).reversed());
             }
             updateDisplay();
         });
     }
 
-
+    // The action listener for all filter checkboxes
     private void handleFiltering() {
         filterDisplay.addActionListener(e -> {
             boolean isChecked = filterDisplay.isSelected();
             setFilterCheckboxVisibility(isChecked);
             updateDisplay();
         });
-        hideEventsCheckbox.addActionListener(e -> updateDisplay());
-        hideDeadlinesCheckbox.addActionListener(e -> updateDisplay());
-        hideMeetingsCheckbox.addActionListener(e -> updateDisplay());
+        removeEventsCheckbox.addActionListener(e -> updateDisplay());
+        removeDeadlinesCheckbox.addActionListener(e -> updateDisplay());
+        removeMeetingsCheckbox.addActionListener(e -> updateDisplay());
+        removeCompletedCheckbox.addActionListener(e -> updateDisplay());
     }
 
+    // The action listener for the add event button which uses the AddEventModal class to create a modal
     public void handleAddEvent() {
         addEventButton.addActionListener(e -> {
             AddEventModal modal = new AddEventModal(parentFrame);
@@ -138,31 +170,38 @@ public class EventListPanel extends JPanel {
                 if (eventType == null) {
                     return;
                 }
-
+                // Get the input from the modal
                 String eventName = modal.getEventName();
                 String eventLocation = modal.getEventLocation();
                 String eventDate = modal.getEventDate();
 
+                // parse the input and add it to the events array list based off meeting or deadline
                 switch (eventType) {
                     case "Meeting":
                         LocalDateTime eventStartTime = parseDateTime(modal.getEventDate(), modal.getEventStartTime());
                         LocalDateTime eventEndTime = parseDateTime(modal.getEventDate(), modal.getEventEndTime());
-                        events.add(new Meeting(eventName, eventStartTime, eventEndTime, eventLocation));
+                       addEvent(new Meeting(eventName, eventStartTime, eventEndTime, eventLocation));
                         break;
                     case "Deadline":
                         String eventTime = modal.getEventEndTime();
                         System.out.println(eventTime);
-                        events.add(new Deadline(eventName, parseDateTime(eventDate, eventTime)));
+                        addEvent(new Deadline(eventName, parseDateTime(eventDate, eventTime)));
                 }
-
                 updateDisplay();
-
-                System.out.println(events);
-
             }
         });
     }
 
+    // method to add the events to this list
+    public void addEvent(Event event) {
+        events.add(event);
+        updateDisplay();
+    }
+
+    /*
+        Method that translates the LocalDateTime into something that more readable and easier to input.
+        If a time is not added then it will automatically default to midnight.
+     */
     private LocalDateTime parseDateTime(String date, String time) {
         try {
             LocalDate parsedDate = LocalDate.parse(date, DATE_FORMATTER);

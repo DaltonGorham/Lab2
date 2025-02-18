@@ -7,13 +7,12 @@ import java.time.format.DateTimeFormatter;
 public class EventPanel extends JPanel {
     private Event event;
     private JPanel eventDetailsPanel;
-    private JButton completeButton;
     private JLabel nameLabel, startTimeLabel, endTimeLabel, durationLabel, locationLabel, completedLabel, dateLabel;
-    DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("MMM d, yyyy");
-    DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("h:mm a");
+    private JCheckBox completeCheckbox;
+    DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("MMM d, yyyy");  // formats for the dates
+    DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("h:mm a");       // formats for the times
 
-
-
+    // constructor
     EventPanel(Event event) {
         this.event = event;
 
@@ -24,16 +23,15 @@ public class EventPanel extends JPanel {
         eventDetailsPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         add(eventDetailsPanel, BorderLayout.CENTER);
 
+        // Name
         nameLabel = new JLabel("Event: " + event.getName());
         nameLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0));
         eventDetailsPanel.add(nameLabel);
-
-
         eventDetailsPanel.add(Box.createVerticalGlue());
-
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
 
+        // If the event is a meeting, this will be the output
         if (event instanceof Meeting meeting) {
             dateLabel = new JLabel("Date: " + meeting.getDateTime().format(dateFormat));
             eventDetailsPanel.add(dateLabel);
@@ -52,6 +50,7 @@ public class EventPanel extends JPanel {
         }
 
 
+        // If the event is a deadline, this will be the output
         if (event instanceof Deadline deadline) {
             dateLabel = new JLabel("Date: " + deadline.getDateTime().format(dateFormat));
             eventDetailsPanel.add(dateLabel);
@@ -60,21 +59,20 @@ public class EventPanel extends JPanel {
             eventDetailsPanel.add(endTimeLabel);
         }
 
+        // Both meetings and deadlines can be marked as complete
         if (event instanceof Completable) {
             Completable completable = (Completable) event;
             completedLabel = new JLabel("Completed: " + completable.isCompleted());
             eventDetailsPanel.add(completedLabel);
 
-            completeButton = new JButton("Complete");
-            completeButton.addActionListener(e -> {
+            completeCheckbox = new JCheckBox("Complete");
+            completeCheckbox.addActionListener(e -> {
                 completable.complete();
                 completedLabel.setText("Completed: " + completable.isCompleted());
 
             });
-            buttonPanel.add(completeButton);
+            buttonPanel.add(completeCheckbox);
         }
         add(buttonPanel, BorderLayout.EAST);
-
     }
-
 }
