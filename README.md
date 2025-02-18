@@ -137,37 +137,107 @@ This project is planning and managing events like meetings and deadlines. The de
 
 ## Methods Overview
 
-### Main Classes and Methods
-
-#### `EventPlanner`
-- **`addDefaultEvents(List<Event> defaultEvents)`**: Adds preset events.
-- **`main(String[] args)`**: Initializes the main GUI.
-
-#### `Event`
-- **`getName()`**: Returns the event name.
-- **`compareTo(Event e)`**: Compares events for sorting.
-
-#### `Meeting`
-- **`getDuration()`**: Calculates the time duration of the meeting.
-- **`complete()`**: Marks the meeting as completed.
-
-#### `Deadline`
-- **`complete()`**: Marks the deadline as completed.
-
-#### `AddEventModal`
-- **`isEntryValid()`**: Validates modal input.
-- **`isConfirmed()`**: Tells whether input is confirmed by the user.
-
-#### `EventListPanel`
-- **`addEvent(Event event)`**: Adds a new event to the list.
-- **`updateDisplay()`**: Refreshes the event display panel.
-- **`handleSorting()`**: Applies sorting based on user input.
-- **`handleFiltering()`**: Applies selected filters to the event list.
+### `EventPlanner`
+- **`addDefaultEvents(List<Event>)`**:
+  - Adds preset default events (e.g., one `Meeting` and one `Deadline`). 
+- **`main(String[])`**:
+  - Creates the JFrame and initializes the `EventListPanel` with default events.
 
 ---
 
-## Future Improvements
-- Allow editing of existing events.
-- Add better persistence (store/load events from a database or file).
-- Improve modal validation for edge cases.
-- Include reminders/notifications for upcoming deadlines or meetings.
+### `Event (Abstract)`
+- **Constructors**:
+  - `Event(String name, LocalDateTime dateTime)`: Initializes the name and event date.
+- **Methods**:
+  - **`String getName()`**: Returns the event name.
+  - **`void setName(String name)`**: Updates the event name.
+  - **`LocalDateTime getDateTime()`**: Gets the associated date and time.
+  - **`void setDateTime(LocalDateTime dateTime)`**: Sets the associated date and time.
+  - **`int compareTo(Event e)`**:
+    - First compares events by datetime.
+    - If equal, sorts by name alphabetically.
+
+---
+
+### `Meeting`
+- **Constructors**:
+  - `Meeting(String name, LocalDateTime start, LocalDateTime end, String location)`: Creates a meeting event.
+- **Methods**:
+  - **`LocalDateTime getStartDateTime()`**: Returns the start time of the meeting.
+  - **`LocalDateTime getEndDateTime()`**: Returns the end time of the meeting.
+  - **`Duration getDuration()`**: Calculates and returns the duration of the meeting.
+  - **`String getLocation()`**: Returns the meeting location.
+  - **`void complete()`**: Marks the meeting as completed.
+  - **`boolean isCompleted()`**: Checks if the meeting is marked as complete.
+
+---
+
+### `Deadline`
+- **Constructors**:
+  - `Deadline(String name, LocalDateTime deadline)`: Creates a deadline event.
+- **Methods**:
+  - **`void complete()`**: Marks the deadline as complete.
+  - **`boolean isCompleted()`**: Returns if the deadline task is completed.
+
+---
+
+### `AddEventModal`
+- **Constructors**:
+  - `AddEventModal(Frame parent)`: Creates a modal dialog for adding events.
+- **Core Methods**:
+  - **`boolean isEntryValid()`**: Validates input fields to ensure correct formats for date and time.
+  - **`boolean isConfirmed()`**: Checks if the user confirmed the modal by clicking "Add Event".
+  - **`String getEventName()`**: Retrieves the entered event name.
+  - **`String getEventType()`**: Retrieves the event type (Meeting or Deadline).
+  - **`String getEventDate()`**: Retrieves the entered event date.
+  - **`String getEventStartTime()`**: Retrieves the entered start time (if applicable).
+  - **`String getEventEndTime()`**: Retrieves the entered end time.
+  - **`String getEventLocation()`**: Retrieves the entered event location.
+
+---
+
+### `EventListPanel`
+- **Constructors**:
+  - `EventListPanel(JFrame parentFrame)`: Initializes the panel with all controls.
+- **Core Methods**:
+  - **`addEvent(Event event)`**: Adds an event to the list and updates the display.
+  - **`updateDisplay()`**: Re-renders the display panel with current events.
+  - **`removeDeadlines()`**: Filters out all deadlines from the event list.
+  - **`removeMeetings()`**: Filters out all meetings from the event list.
+  - **`removeEvents()`**: Clears all events from the list.
+  - **`removeCompletedEvents()`**: Removes completed tasks from the list.
+  - **`handleSorting()`**: Sorts events based on user dropdown selection (name/date, ascending/descending).
+  - **`handleFiltering()`**: Handles the behavior of multiple filtering checkboxes.
+  - **`handleAddEvent()`**: Instantiates the `AddEventModal` dialog and processes newly added events.
+
+---
+
+### `EventPanel`
+- **Constructors**:
+  - `EventPanel(Event event)`: Initializes the panel for a specific event.
+- **Core Methods**:
+  - Dynamically formats its components based on the type of event (Meeting or Deadline).
+
+---
+
+## Running the Application
+
+1. **Setup**:
+   - Clone/import the project into your favorite Java IDE.
+   - Make sure you have Java SDK 23 set up.
+
+2. **Launch**:
+   - Run the `EventPlanner` class to start the application.
+
+3. **Usage**:
+   - Add events using the `Add Event` button.
+   - Mark events as complete or apply filters to customize your view.
+   - Sort events by name or date using the sorting dropdown.
+
+---
+
+## Future Enhancements
+- Enable event editing directly from the GUI.
+- Introduce persistent storage (e.g., file/database integration) to save events across sessions.
+- Add reminders or notifications for upcoming events.
+- Implement recurring events for more robust event management.
