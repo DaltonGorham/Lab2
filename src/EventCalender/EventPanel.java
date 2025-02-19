@@ -24,7 +24,7 @@ public class EventPanel extends JPanel {
         add(eventDetailsPanel, BorderLayout.CENTER);
 
         // Name
-        nameLabel = new JLabel("Event: " + event.getName());
+        nameLabel = new JLabel("" + event.getName());
         nameLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0));
         eventDetailsPanel.add(nameLabel);
         eventDetailsPanel.add(Box.createVerticalGlue());

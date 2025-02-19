@@ -19,10 +19,10 @@ public class EventListPanel extends JPanel {
     private JCheckBox filterDisplay;
     private JButton addEventButton;
     private JFrame parentFrame;
-    private JCheckBox removeEventsCheckbox;
-    private JCheckBox removeDeadlinesCheckbox;
-    private JCheckBox removeMeetingsCheckbox;
-    private JCheckBox removeCompletedCheckbox;
+    private JCheckBox filterEventsCheckbox;
+    private JCheckBox filterDeadlinesCheckbox;
+    private JCheckBox filterMeetingsCheckbox;
+    private JCheckBox filterCompletedCheckbox;
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MM/dd/yyyy");  // format for dates
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("hh:mm a");     // formats for times
 
@@ -39,19 +39,19 @@ public class EventListPanel extends JPanel {
         addEventButton = new JButton("Add Event");
 
         // Multiple filter checkboxes
-        removeEventsCheckbox = new JCheckBox("Remove Events");
-        removeDeadlinesCheckbox = new JCheckBox("Remove Deadlines");
-        removeMeetingsCheckbox = new JCheckBox("Remove Meetings");
-        removeCompletedCheckbox = new JCheckBox("Remove Completed Tasks");
+        filterEventsCheckbox = new JCheckBox("Filter Events");
+        filterDeadlinesCheckbox = new JCheckBox("Filter Deadlines");
+        filterMeetingsCheckbox = new JCheckBox("Filter Meetings");
+        filterCompletedCheckbox = new JCheckBox("Filter Completed Tasks");
 
         // add all controls to control panel
         controlPanel.add(addEventButton);
         controlPanel.add(sortDropDown);
         controlPanel.add(filterDisplay);
-        controlPanel.add(removeEventsCheckbox);
-        controlPanel.add(removeDeadlinesCheckbox);
-        controlPanel.add(removeMeetingsCheckbox);
-        controlPanel.add(removeCompletedCheckbox);
+        controlPanel.add(filterEventsCheckbox);
+        controlPanel.add(filterDeadlinesCheckbox);
+        controlPanel.add(filterMeetingsCheckbox);
+        controlPanel.add(filterCompletedCheckbox);
         setFilterCheckboxVisibility(false);
         add(controlPanel);
 
@@ -73,62 +73,47 @@ public class EventListPanel extends JPanel {
 
     // If this is set as true the filter method will show up
     private void setFilterCheckboxVisibility(boolean visible) {
-        removeEventsCheckbox.setVisible(visible);
-        removeDeadlinesCheckbox.setVisible(visible);
-        removeMeetingsCheckbox.setVisible(visible);
-        removeCompletedCheckbox.setVisible(visible);
+        filterEventsCheckbox.setVisible(visible);
+        filterDeadlinesCheckbox.setVisible(visible);
+        filterMeetingsCheckbox.setVisible(visible);
+        filterCompletedCheckbox.setVisible(visible);
     }
 
     // Updates the display for every new event added and shows new filters when applicable
     public void updateDisplay() {
-        if (removeCompletedCheckbox.isSelected()) {
-            removeCompletedEvents();
-        }
-
-        // Apply filters based on individual checkboxes
-        if (removeEventsCheckbox.isSelected()) {
-            removeEvents();
-        }
-
-        if (removeDeadlinesCheckbox.isSelected()) {
-            removeDeadlines();
-        }
-
-        if (removeMeetingsCheckbox.isSelected()) {
-            removeMeetings();
-        }
 
         displayPanel.removeAll(); // Clear current display
 
+        // If checkbox is checked then displaying will be set to false and will set the filter
         for (Event event : events) {
-            displayPanel.add(new EventPanel(event));
+            boolean displaying = true;
+
+            if (filterCompletedCheckbox.isSelected() && event instanceof Completable) {
+                displaying = !((Completable) event).isCompleted();
+            }
+
+            if (event instanceof Completable && filterEventsCheckbox.isSelected()) {
+                displaying = false;
+            }
+
+            if (event instanceof Deadline && filterDeadlinesCheckbox.isSelected()) {
+                displaying = false;
+            }
+
+            if (event instanceof Meeting && filterMeetingsCheckbox.isSelected()) {
+                displaying = false;
+            }
+
+            if (displaying){
+                displayPanel.add(new EventPanel(event));
+            }
+
         }
 
         // Refresh display
         displayPanel.revalidate();
         displayPanel.repaint();
     }
-
-    // remove all deadlines
-    public void removeDeadlines() {
-        events.removeIf(event -> event instanceof Deadline);
-    }
-
-    // remove all meetings
-    public void removeMeetings() {
-        events.removeIf(event -> event instanceof Meeting);
-    }
-
-    // remove all events
-    public void removeEvents() {
-        events.clear();
-    }
-
-    // Remove completed events from the list
-    public void removeCompletedEvents() {
-        events.removeIf(event -> event instanceof Completable && ((Completable) event).isCompleted());
-    }
-
 
 
     // Method to sort by name, date, or those in reverse
@@ -153,10 +138,10 @@ public class EventListPanel extends JPanel {
             setFilterCheckboxVisibility(isChecked);
             updateDisplay();
         });
-        removeEventsCheckbox.addActionListener(e -> updateDisplay());
-        removeDeadlinesCheckbox.addActionListener(e -> updateDisplay());
-        removeMeetingsCheckbox.addActionListener(e -> updateDisplay());
-        removeCompletedCheckbox.addActionListener(e -> updateDisplay());
+        filterEventsCheckbox.addActionListener(e -> updateDisplay());
+        filterDeadlinesCheckbox.addActionListener(e -> updateDisplay());
+        filterMeetingsCheckbox.addActionListener(e -> updateDisplay());
+        filterCompletedCheckbox.addActionListener(e -> updateDisplay());
     }
 
     // The action listener for the add event button which uses the AddEventModal class to create a modal
