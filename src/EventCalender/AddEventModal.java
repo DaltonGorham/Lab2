@@ -72,12 +72,11 @@ public class AddEventModal extends JDialog {
         // action listener for drop down
         eventDropDown.addActionListener(e -> {
             boolean isMeeting = "Meeting".equals(eventDropDown.getSelectedItem());
-            eventStartTimeField.setEnabled(isMeeting);
-            eventLocationField.setEnabled(isMeeting);
-            eventEndTimeField.setEnabled(isMeeting);
             boolean isDeadline = "Deadline".equals(eventDropDown.getSelectedItem());
-            eventDateField.setEnabled(isDeadline);
-            eventEndTimeField.setEnabled(isDeadline);
+            eventStartTimeField.setEnabled(isMeeting); // only meetings
+            eventLocationField.setEnabled(isMeeting); // only meetings
+            eventDateField.setEditable(isMeeting || isDeadline); // both meetings and deadlines can have dates
+            eventEndTimeField.setEnabled(isMeeting || isDeadline); // both meetings and deadlines can have end time
         });
 
 
